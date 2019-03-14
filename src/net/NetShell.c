@@ -48,10 +48,14 @@ int main(int argc, char *argv[]) {
 
     connect(cli_socket_fd, (struct sockaddr *)&server_addr, sizeof(server_addr));
 
-    while (strcmp(message, "exit")) {
+    // Because the fgets function will read the '\n', the analyzing condition should
+    // compare message with "exit\n".
+    while (strcmp(message, "exit\n")) {
         printf("NetShell> ");
         fgets(message, MAX_DATA_SIZE, stdin);
         send(cli_socket_fd, message, strlen(message)+1, 0);
+        if (strcmp(message, "close server\n") == 0)
+            break;
         recv(cli_socket_fd, buffer, MAX_DATA_SIZE, 0);
         printf("Received from server : %s\n", buffer);
     }

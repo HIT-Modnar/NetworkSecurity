@@ -4,6 +4,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 #include <string.h>
 #include <unistd.h>
 #include <ctype.h>
@@ -33,25 +34,36 @@ int main(int argc, char *argv[]) {
 
     listen(listen_fd, 20);
 
-    printf("Accepting connection ... \n");
-
     while (1) {
+        bool exit_server = false;
+        printf("\nWaiting for connection ... \n");
         addr_len = sizeof(client_addr);
+        printf("%d\n", addr_len);
         connect_fd = accept(listen_fd, (struct sockaddr *)&client_addr, &addr_len);
 
         int n = recv(connect_fd, buffer, MAX_DATA_SIZE, 0);
+        while (1) {
+            if (strcmp(buffer, "close server\n") == 0) {
+                exit_server = true;
+                break;
+            }
+            if (strcmp(buffer, "exit\n") == 0)
+                break;
 
-        printf("Received from %s : %d \n", inet_ntop(AF_INET, &client_addr, message, 
-                sizeof(message)), ntohs(client_addr.sin_port));
+            printf("Received from %s : %d \n", inet_ntop(AF_INET, &client_addr, 
+                    message, sizeof(message)), ntohs(client_addr.sin_port));
 
-        for (int i = 0; i < n; ++i) 
-            buffer[i] = toupper(buffer[i]);
+            for (int i = 0; i < n; ++i) 
+                buffer[i] = toupper(buffer[i]);
 
-        send(connect_fd, buffer, n+1, 0);
-
-        printf("Send : %s\n", buffer);
-
+            send(connect_fd, buffer, n+1, 0);
+            printf("Send : %s\n", buffer);
+            n = recv(connect_fd, buffer, MAX_DATA_SIZE, 0);
+        }
         close(connect_fd);
+        if (exit_server)
+            break;
     }
+    printf("Closing the Server...\nDone.\n");
     return EXIT_SUCCESS;
 }
