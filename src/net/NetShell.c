@@ -12,68 +12,48 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 
-// As for the local port, should choose from 1025 to 65535. 
-// Because the ports no more than 1024 are remained by operating system. 
-const int LOC_PORT = 8888;
-const int MAX_DATA_SIZE = 256;
-const int BUFFER_SIZE = 1024;
+#include "loc_net.h"
 
-int recv_txt_file(int cli_socket_fd, const char *file_path) {
-    char buffer[BUFFER_SIZE];
-    FILE *fp = fopen(file_path, "w");
-    if (fp == NULL) {
-        perror("File : not found.\n");
-        return EXIT_FAILURE;
-    } else {
-        bzero(buffer, BUFFER_SIZE);
-        int length = 0;
-        while ((length = recv(cli_socket_fd, buffer, BUFFER_SIZE, 0)) > 0) {
-            if (fwrite(buffer, sizeof(char), length, fp) < length) {
-                perror("File : write failed.\n");
-                return EXIT_FAILURE;
-            }
-            bzero(buffer, BUFFER_SIZE);
-        }
-    }
-    fclose(fp);
-    printf("Transmission finished.\n");
+int create_new_connection(int *cli_socket_fd, struct sockaddr_in *server_addr) {
+    // Create a new socket_fd to cli_socket_fd.
+    *cli_socket_fd = socket(AF_INET, SOCK_STREAM, 0);
+    // Make the new socket_fd connect to the target server.
+    connect(*cli_socket_fd, (struct sockaddr *)server_addr, sizeof(*server_addr));
     return EXIT_SUCCESS;
 }
 
 int main(int argc, char *argv[]) {
-    char message[MAX_DATA_SIZE], buffer[MAX_DATA_SIZE];
+    char message[MAX_MSG_SIZE], buffer[MAX_MSG_SIZE];
     int cli_socket_fd, number_bytes;
     struct sockaddr_in server_addr;
-
-    cli_socket_fd = socket(AF_INET, SOCK_STREAM, 0);
-
     bzero(&server_addr, sizeof(server_addr));
 
+    // Initilize the target server's information.
     server_addr.sin_family = AF_INET;
     server_addr.sin_port = htons(LOC_PORT);
     inet_pton(AF_INET, "127.0.0.1", &server_addr.sin_addr);
 
-    connect(cli_socket_fd, (struct sockaddr *)&server_addr, sizeof(server_addr));
+    create_new_connection(&cli_socket_fd, &server_addr);
 
     // Because the fgets function will read the '\n', the analyzing condition should
     // compare message with "exit\n".
     while (strcmp(message, "exit\n")) {
         printf("NetShell> ");
-        fgets(message, MAX_DATA_SIZE, stdin);
+        fgets(message, MAX_MSG_SIZE, stdin);
         send(cli_socket_fd, message, strlen(message)+1, 0);
         if (strcmp(message, "close server\n") == 0)
             break;
         if (strcmp(message, "send.txt\n") == 0) { // TODO
             recv_txt_file(cli_socket_fd, "../../file/client/recv.txt");
+            create_new_connection(&cli_socket_fd, &server_addr);
             continue;
         }
-        recv(cli_socket_fd, buffer, MAX_DATA_SIZE, 0);
+        recv(cli_socket_fd, buffer, MAX_MSG_SIZE, 0);
         printf("Received from server : %s\n", buffer);
     }
 
     close(cli_socket_fd);
 
-//    printf("Received from server : %s\n", buffer);
     printf("Exit the Netshell.\n");
 
     return EXIT_SUCCESS;
