@@ -1,0 +1,5 @@
+Hello, this is the file in the server.
+
+During the transmission, the file will be sent to client.
+
+Date : 2019-03-15

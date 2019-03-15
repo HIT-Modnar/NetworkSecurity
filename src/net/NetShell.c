@@ -16,25 +16,32 @@
 // Because the ports no more than 1024 are remained by operating system. 
 const int LOC_PORT = 8888;
 const int MAX_DATA_SIZE = 256;
+const int BUFFER_SIZE = 1024;
 
-// struct sockaddr_in {
-//    unsigned short int sin_family;
-//    uint16_t sin_port;
-//    struct in_addr sin_addr;
-//    unsigned char sin_zero[8];
-// };
-// 
-// struct in_addr {
-//     uint32_t s_addr;
-// };
-
-// Format the IP address from dot split's to long type(have changed to net formation).
-// uint32_t inet_addr("xxx.xxx.xxx.xxx");
+int recv_txt_file(int cli_socket_fd, const char *file_path) {
+    char buffer[BUFFER_SIZE];
+    FILE *fp = fopen(file_path, "w");
+    if (fp == NULL) {
+        perror("File : not found.\n");
+        return EXIT_FAILURE;
+    } else {
+        bzero(buffer, BUFFER_SIZE);
+        int length = 0;
+        while ((length = recv(cli_socket_fd, buffer, BUFFER_SIZE, 0)) > 0) {
+            if (fwrite(buffer, sizeof(char), length, fp) < length) {
+                perror("File : write failed.\n");
+                return EXIT_FAILURE;
+            }
+            bzero(buffer, BUFFER_SIZE);
+        }
+    }
+    fclose(fp);
+    printf("Transmission finished.\n");
+    return EXIT_SUCCESS;
+}
 
 int main(int argc, char *argv[]) {
     char message[MAX_DATA_SIZE], buffer[MAX_DATA_SIZE];
-    if (argc > 1)
-        strcpy(message, argv[1]);
     int cli_socket_fd, number_bytes;
     struct sockaddr_in server_addr;
 
@@ -56,6 +63,10 @@ int main(int argc, char *argv[]) {
         send(cli_socket_fd, message, strlen(message)+1, 0);
         if (strcmp(message, "close server\n") == 0)
             break;
+        if (strcmp(message, "send.txt\n") == 0) { // TODO
+            recv_txt_file(cli_socket_fd, "../../file/client/recv.txt");
+            continue;
+        }
         recv(cli_socket_fd, buffer, MAX_DATA_SIZE, 0);
         printf("Received from server : %s\n", buffer);
     }
