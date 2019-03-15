@@ -51,6 +51,8 @@ int exec_cmd(const char *cmd) {
                 return GET_TXT_FILE;
             else if (!strcmp(dot_pos+1, "png"))
                 return GET_BIN_FILE;
+            else if (!strcmp(dot_pos+1, "jpg"))
+                return GET_BIN_FILE;
             else 
                 return GET_ERROR;
         }
@@ -83,6 +85,11 @@ int main(int argc, char *argv[]) {
             break;
         if (status == GET_TXT_FILE) { // TODO
             recv_txt_file(cli_socket_fd, "../../file/client/recv.txt");
+            create_new_connection(&cli_socket_fd, &server_addr);
+            continue;
+        }
+        if (status == GET_BIN_FILE) { // TODO
+            recv_bin_file(cli_socket_fd, "../../file/client/recv.jpg");
             create_new_connection(&cli_socket_fd, &server_addr);
             continue;
         }

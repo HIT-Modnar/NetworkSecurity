@@ -52,6 +52,10 @@ int main(int argc, char *argv[]) {
                 send_txt_file(connect_fd, "../../file/server/send.txt");
                 break;
             }
+            if (strcmp(buffer, "get pic.jpg\n") == 0) {
+                send_bin_file(connect_fd, "../../file/server/pic.jpg");
+                break;
+            }
 
             printf("Received from %s : %d \n", inet_ntop(AF_INET, &client_addr, 
                     message, sizeof(message)), ntohs(client_addr.sin_port));

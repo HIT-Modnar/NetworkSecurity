@@ -62,4 +62,52 @@ extern int recv_txt_file(int cli_socket_fd, const char *file_path) {
     return EXIT_SUCCESS;
 }
 
+extern int send_bin_file(int connect_fd, const char *file_path) {
+    char buffer[BUFFER_SIZE];
+    FILE *fp = fopen(file_path, "rb");
+    printf("Run at here.\n");
+    if (fp == NULL)
+        perror("ERROR : File : Not found!\n");
+    else {
+        printf("Enter right way\n");
+        bzero(buffer, BUFFER_SIZE);
+        int length = 0;
+        while ((length = fread(buffer, sizeof(char), BUFFER_SIZE, fp)) > 0) {
+            printf("Enter loop way\n");
+            if (send(connect_fd, buffer, length, 0) < 0) {
+                perror("ERROR : File : Send failed.\n");
+                break;
+            }
+            bzero(buffer, BUFFER_SIZE);
+        }
+    }
+    fclose(fp);
+    printf("Transmission finished.\n");
+    return EXIT_SUCCESS;
+}
+
+extern int recv_bin_file(int cli_socket_fd, const char *file_path) {
+    char buffer[BUFFER_SIZE];
+    FILE *fp = fopen(file_path, "wb");
+    if (fp == NULL) {
+        perror("ERROR : File : Not found.\n");
+        return EXIT_FAILURE;
+    } else {
+        printf("Run in the right way.\n");
+        bzero(buffer, BUFFER_SIZE);
+        int length = 0;
+        while ((length = recv(cli_socket_fd, buffer, BUFFER_SIZE, 0)) > 0) {
+            printf("Into the loop way.\n");
+            if (fwrite(buffer, sizeof(char), length, fp) < length) {
+                perror("ERROR : File : Write failed.\n");
+                return EXIT_FAILURE;
+            }
+            bzero(buffer, BUFFER_SIZE);
+        }
+    }
+    fclose(fp);
+    printf("Transmission finished.\n");
+    return EXIT_SUCCESS;
+}
+
 #endif
