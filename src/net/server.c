@@ -48,7 +48,7 @@ int main(int argc, char *argv[]) {
             // Parsing the command to judge whether need to create a new connect_fd.
             if (strcmp(buffer, "exit\n") == 0)
                 break;
-            if (strcmp(buffer, "send.txt\n") == 0) {
+            if (strcmp(buffer, "get send.txt\n") == 0) {
                 send_txt_file(connect_fd, "../../file/server/send.txt");
                 break;
             }
