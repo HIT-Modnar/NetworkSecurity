@@ -19,17 +19,30 @@
 #define MAX_MSG_SIZE 256
 #define BUFFER_SIZE 1024
 
+/**
+ *   In order to maintian the status that user could still send command to server 
+ * after get a file from a server, here defines a function to create a new socket 
+ * to meet the requirement.
+ */
+int create_new_connection(int *cli_socket_fd, struct sockaddr_in *server_addr) {
+    // Create a new socket_fd to cli_socket_fd.
+    *cli_socket_fd = socket(AF_INET, SOCK_STREAM, 0);
+    // Make the new socket_fd connect to the target server.
+    connect(*cli_socket_fd, (struct sockaddr *)server_addr, sizeof(*server_addr));
+    return EXIT_SUCCESS;
+}
+
 extern int send_txt_file(int connect_fd, const char *file_path) {
     char buffer[BUFFER_SIZE];
     FILE *fp = fopen(file_path, "r");
     if (fp == NULL)
-        perror("ERROR : File : Not found!\n");
+        perror("ERROR : SEND_TXT_FILE : Source file not found!\n");
     else {
         bzero(buffer, BUFFER_SIZE);
         int length = 0;
         while ((length = fread(buffer, sizeof(char), BUFFER_SIZE, fp)) > 0) {
             if (send(connect_fd, buffer, length, 0) < 0) {
-                perror("ERROR : File : Send failed.\n");
+                perror("ERROR : SEND_TXT_FILE : Send source file failed.\n");
                 break;
             }
             bzero(buffer, BUFFER_SIZE);
@@ -44,14 +57,14 @@ extern int recv_txt_file(int cli_socket_fd, const char *file_path) {
     char buffer[BUFFER_SIZE];
     FILE *fp = fopen(file_path, "w");
     if (fp == NULL) {
-        perror("ERROR : File : Not found.\n");
+        perror("ERROR : RECV_TXT_FILE : Target file not found.\n");
         return EXIT_FAILURE;
     } else {
         bzero(buffer, BUFFER_SIZE);
         int length = 0;
         while ((length = recv(cli_socket_fd, buffer, BUFFER_SIZE, 0)) > 0) {
             if (fwrite(buffer, sizeof(char), length, fp) < length) {
-                perror("ERROR : File : Write failed.\n");
+                perror("ERROR : RECV_TXT_FILE : Write target file failed.\n");
                 return EXIT_FAILURE;
             }
             bzero(buffer, BUFFER_SIZE);
@@ -69,11 +82,11 @@ extern int send_bin_file(int connect_fd, const char *file_path) {
     if (fp == NULL)
         perror("ERROR : File : Not found!\n");
     else {
-        printf("Enter right way\n");
+        printf("Enter send_bin\n");
         bzero(buffer, BUFFER_SIZE);
         int length = 0;
         while ((length = fread(buffer, sizeof(char), BUFFER_SIZE, fp)) > 0) {
-            printf("Enter loop way\n");
+            printf("Enter send_bin loop.\n");
             if (send(connect_fd, buffer, length, 0) < 0) {
                 perror("ERROR : File : Send failed.\n");
                 break;
@@ -93,11 +106,11 @@ extern int recv_bin_file(int cli_socket_fd, const char *file_path) {
         perror("ERROR : File : Not found.\n");
         return EXIT_FAILURE;
     } else {
-        printf("Run in the right way.\n");
+        printf("Run in the recv_bin.\n");
         bzero(buffer, BUFFER_SIZE);
         int length = 0;
         while ((length = recv(cli_socket_fd, buffer, BUFFER_SIZE, 0)) > 0) {
-            printf("Into the loop way.\n");
+            printf("Into the recv_bin loop.\n");
             if (fwrite(buffer, sizeof(char), length, fp) < length) {
                 perror("ERROR : File : Write failed.\n");
                 return EXIT_FAILURE;

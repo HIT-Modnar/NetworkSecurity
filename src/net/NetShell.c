@@ -13,55 +13,11 @@
 #include <arpa/inet.h>
 
 #include "loc_net.h"
-#include "parse_cmd.h"
-
-const int MAX_CMD_NUM = 16;
-
-const int RETURN_SUCCESS = 0;
-const int EXIT_SHELL     = 1;
-const int CLOSE_SERVER   = 2;
-const int GET_TXT_FILE   = 3;
-const int GET_BIN_FILE   = 4;
-const int GET_ERROR      = -1;
-
-/**
- *   In order to maintian the status that user could still send command to server 
- * after get a file from a server, here defines a function to create a new socket 
- * to meet the requirement.
- */
-int create_new_connection(int *cli_socket_fd, struct sockaddr_in *server_addr) {
-    // Create a new socket_fd to cli_socket_fd.
-    *cli_socket_fd = socket(AF_INET, SOCK_STREAM, 0);
-    // Make the new socket_fd connect to the target server.
-    connect(*cli_socket_fd, (struct sockaddr *)server_addr, sizeof(*server_addr));
-    return EXIT_SUCCESS;
-}
-
-int exec_cmd(const char *cmd) {
-    char *argv[MAX_CMD_NUM];
-    int argc = parse_cmd(cmd, argv);
-    if (argc > 0) {
-        if (!strcmp(argv[0], "exit"))
-            return EXIT_SHELL;
-        if (!strcmp(argv[0], "close") && !strcmp(argv[1], "server"))
-            return CLOSE_SERVER;
-        if (!strcmp(argv[0], "get")) {
-            char *dot_pos = strchr(argv[1], '.');
-            if (!strcmp(dot_pos+1, "txt"))
-                return GET_TXT_FILE;
-            else if (!strcmp(dot_pos+1, "png"))
-                return GET_BIN_FILE;
-            else if (!strcmp(dot_pos+1, "jpg"))
-                return GET_BIN_FILE;
-            else 
-                return GET_ERROR;
-        }
-    }
-    return RETURN_SUCCESS;
-}
+#include "loc_file.h"
+#include "netshell_cmd.h"
 
 int main(int argc, char *argv[]) {
-    char message[MAX_MSG_SIZE], buffer[MAX_MSG_SIZE];
+    char message[MAX_MSG_SIZE], buffer[MAX_MSG_SIZE], *args[MAX_CMD_NUM];
     int cli_socket_fd, number_bytes;
     struct sockaddr_in server_addr;
     bzero(&server_addr, sizeof(server_addr));
@@ -76,25 +32,36 @@ int main(int argc, char *argv[]) {
     // Because the fgets function will read the '\n', the analyzing condition should
     // compare message with "exit\n".
     int status = 0;
-    while (status != EXIT_SHELL) {
+    while (1) {
         printf("NetShell> ");
         fgets(message, MAX_MSG_SIZE, stdin);
         send(cli_socket_fd, message, strlen(message)+1, 0);
-        status = exec_cmd(message);
-        if (status == CLOSE_SERVER) 
+        status = parse_cmd(message, args);
+        if (status == CLOSE_SERVER || status == EXIT_SHELL) 
             break;
-        if (status == GET_TXT_FILE) { // TODO
-            recv_txt_file(cli_socket_fd, "../../file/client/recv.txt");
+        if (status == GET_FILE) { // TODO
+            if (parse_file_format(args[1]) == TXT_FILE)
+                recv_txt_file(cli_socket_fd, "../../file/client/recv.txt"); // TODO
+            else if (parse_file_format(args[1]) == BIN_FILE)
+                recv_bin_file(cli_socket_fd, "../../file/client/recv.jpg"); // TODO
+            else
+                perror("ERROR : FILE_FORMAT : File's format can't be recognised.\n");
             create_new_connection(&cli_socket_fd, &server_addr);
             continue;
         }
-        if (status == GET_BIN_FILE) { // TODO
-            recv_bin_file(cli_socket_fd, "../../file/client/recv.jpg");
+        if (status == PUSH_FILE) { // TODO
+            if (parse_file_format(args[1]) == TXT_FILE)
+                send_txt_file(cli_socket_fd, "../../file/client/recv.txt"); // TODO
+            else if (parse_file_format(args[1]) == BIN_FILE)
+                send_bin_file(cli_socket_fd, "../../file/client/recv.jpg"); // TODO
+            else
+                perror("ERROR : FILE_FORMAT : File's format can't be recognised.\n");
+            close(cli_socket_fd);
             create_new_connection(&cli_socket_fd, &server_addr);
             continue;
         }
         recv(cli_socket_fd, buffer, MAX_MSG_SIZE, 0);
-        printf("Received from server : %s\n", buffer);
+        printf("Received message from server : %s\n", buffer);
     }
 
     close(cli_socket_fd);

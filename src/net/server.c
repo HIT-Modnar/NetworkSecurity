@@ -14,6 +14,8 @@
 #include <sys/types.h>
 
 #include "loc_net.h"
+#include "loc_file.h"
+#include "netshell_cmd.h"
 
 int main(int argc, char *argv[]) {
     struct sockaddr_in server_addr, client_addr;
@@ -32,6 +34,7 @@ int main(int argc, char *argv[]) {
     bind(listen_fd, (struct sockaddr *)&server_addr, 16);
     listen(listen_fd, 20);
 
+    char *args[MAX_CMD_NUM];
     while (1) {
         bool exit_server = false;
         printf("\nWaiting for connection ... \n");
@@ -40,20 +43,33 @@ int main(int argc, char *argv[]) {
 
         while (1) {
             int n = recv(connect_fd, buffer, MAX_MSG_SIZE, 0);
+            int status = parse_cmd(buffer, args);
             // Parsing the command from user to judge whether need to close server.
-            if (strcmp(buffer, "close server\n") == 0) {
+            if (status == CLOSE_SERVER) {
                 exit_server = true;
                 break;
             }
             // Parsing the command to judge whether need to create a new connect_fd.
-            if (strcmp(buffer, "exit\n") == 0)
+            if (status == EXIT_SHELL)
                 break;
-            if (strcmp(buffer, "get send.txt\n") == 0) {
-                send_txt_file(connect_fd, "../../file/server/send.txt");
+            if (status == GET_FILE) {
+                if (parse_file_format(args[1]) == TXT_FILE)
+                    send_txt_file(connect_fd, "../../file/server/send.txt"); // TODO
+                else if (parse_file_format(args[1]) == BIN_FILE)
+                    send_bin_file(connect_fd, "../../file/server/pic.jpg"); // TODO
+                else 
+                    perror("ERROR : SERVER : File's format can't be recognised\n");
                 break;
             }
-            if (strcmp(buffer, "get pic.jpg\n") == 0) {
-                send_bin_file(connect_fd, "../../file/server/pic.jpg");
+            if (status == PUSH_FILE) {
+                if (parse_file_format(args[1]) == TXT_FILE)
+//                    printf("push txt file @ server\n");
+                    recv_txt_file(connect_fd, "../../file/server/recv.txt"); // TODO
+                else if (parse_file_format(args[1]) == BIN_FILE)
+//                    printf("push bin file @ server\n");
+                    recv_bin_file(connect_fd, "../../file/server/recv.jpg"); // TODO
+                else 
+                    perror("ERROR : SERVER : File's format can't be recognised\n");
                 break;
             }
 
