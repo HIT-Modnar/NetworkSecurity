@@ -32,28 +32,6 @@ const int BUFFER_SIZE = 1024;
 // Format the IP address from dot split's to long type(have changed to net formation).
 // uint32_t inet_addr("xxx.xxx.xxx.xxx");
 
-int recv_txt_file(int cli_socket_fd, const char *file_path) {
-    char buffer[BUFFER_SIZE];
-    FILE *fp = fopen(file_path, "w");
-    if (fp == NULL) {
-        perror("File : not found.\n");
-        return EXIT_FAILURE;
-    } else {
-        bzero(buffer, BUFFER_SIZE);
-        int length = 0;
-        while ((length = recv(cli_socket_fd, buffer, BUFFER_SIZE, 0)) > 0) {
-            if (fwrite(buffer, sizeof(char), length, fp) < length) {
-                perror("File : write failed.\n");
-                return EXIT_FAILURE;
-            }
-            bzero(buffer, BUFFER_SIZE);
-        }
-    }
-    fclose(fp);
-    printf("Transmission finished.\n");
-    return EXIT_SUCCESS;
-}
-
 int main(int argc, char *argv[]) {
     char *test_str = "Test string.", buffer[MAX_DATA_SIZE];
     if (argc > 1)
@@ -74,8 +52,10 @@ int main(int argc, char *argv[]) {
     send(cli_socket_fd, test_str, strlen(test_str)+1, 0);
     recv(cli_socket_fd, buffer, MAX_DATA_SIZE, 0);
 
-    strcpy(test_str, "exit\n");
-    send(cli_socket_fd, test_str, strlen(test_str)+1, 0);
+//    strcpy(test_str, "hello");
+//    strcpy(test_str, "exit");
+//    send(cli_socket_fd, test_str, strlen(test_str)+1, 0);
+//    recv(cli_socket_fd, buffer, MAX_DATA_SIZE, 0);
 
     close(cli_socket_fd);
 

@@ -49,7 +49,8 @@ int main(int argc, char *argv[]) {
                 exit_server = true;
                 break;
             }
-            // Parsing the command to judge whether need to create a new connect_fd.
+            // Parsing the command to judge whether need to close current connection 
+            // and create a new connect_fd.
             if (status == EXIT_SHELL)
                 break;
             if (status == GET_FILE) {
@@ -63,10 +64,8 @@ int main(int argc, char *argv[]) {
             }
             if (status == PUSH_FILE) {
                 if (parse_file_format(args[1]) == TXT_FILE)
-//                    printf("push txt file @ server\n");
                     recv_txt_file(connect_fd, "../../file/server/recv.txt"); // TODO
                 else if (parse_file_format(args[1]) == BIN_FILE)
-//                    printf("push bin file @ server\n");
                     recv_bin_file(connect_fd, "../../file/server/recv.jpg"); // TODO
                 else 
                     perror("ERROR : SERVER : File's format can't be recognised\n");

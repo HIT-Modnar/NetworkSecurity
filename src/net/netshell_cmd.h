@@ -17,6 +17,14 @@ const int PUSH_FILE      = 4;
 #include <stdlib.h>
 #include <string.h>
 
+/**
+ * Format the command. 
+ *   The function can delete the useless SPACE character.
+ * 
+ * @param cmd The command which needed to be formatted.
+ * @param argv The argument's value (const char *) array.
+ * @return The command argument's count.
+ */
 extern int format_cmd(const char *cmd, char **argv) {
     int argc = 0;
     static char buf_store[MAX_CMD_LEN];
@@ -37,6 +45,15 @@ extern int format_cmd(const char *cmd, char **argv) {
     return argc;
 }
 
+/** 
+ * Parse a command.
+ *   Judge whether the usage of the command is right.
+ *
+ * @param cmd The command string which need to be parse.
+ * @param argv The arguments' array. And after parsing, the array is also formatted. 
+ * @return PARSE_SUCCESS if parse successfully, or some other status code after 
+ *         parsing successfully (e.g. GET_FILE, PUSH_FILE).
+ */
 extern int parse_cmd(const char *cmd, char *argv[]) {
     int argc = format_cmd(cmd, argv);
     if (argc > 0) {

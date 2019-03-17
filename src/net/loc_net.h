@@ -23,6 +23,10 @@
  *   In order to maintian the status that user could still send command to server 
  * after get a file from a server, here defines a function to create a new socket 
  * to meet the requirement.
+ *
+ * @param *cli_socket_fd The pointer to client's scoket_fd.
+ * @param *server_addr The pointer to server's Internet socket address struct object.
+ * @return EXIT_SUCCESS if create successfully, otherwise nothing.
  */
 int create_new_connection(int *cli_socket_fd, struct sockaddr_in *server_addr) {
     // Create a new socket_fd to cli_socket_fd.
@@ -32,6 +36,13 @@ int create_new_connection(int *cli_socket_fd, struct sockaddr_in *server_addr) {
     return EXIT_SUCCESS;
 }
 
+/**
+ * Send a txt file from server (or client) to client (or server).
+ *
+ * @param connect_fd The connection's socket_fd.
+ * @param file_path The file path of the txt file which prepared to be sent.
+ * @return EXIT_SUCCESS if send successfully, otherwise nothing.
+ */
 extern int send_txt_file(int connect_fd, const char *file_path) {
     char buffer[BUFFER_SIZE];
     FILE *fp = fopen(file_path, "r");
@@ -53,6 +64,13 @@ extern int send_txt_file(int connect_fd, const char *file_path) {
     return EXIT_SUCCESS;
 }
 
+/**
+ * Receive a txt file from server (or client).
+ *
+ * @param cli_socket_fd The connection's socket_fd.
+ * @param file_path The file path of local txt file which prepared to receive.
+ * @return EXIT_SUCCESS if receive successfully, otherwise nothing.
+ */
 extern int recv_txt_file(int cli_socket_fd, const char *file_path) {
     char buffer[BUFFER_SIZE];
     FILE *fp = fopen(file_path, "w");
@@ -75,18 +93,22 @@ extern int recv_txt_file(int cli_socket_fd, const char *file_path) {
     return EXIT_SUCCESS;
 }
 
+/**
+ * Send a binary file from server (or client) to client (or server).
+ *
+ * @param connect_fd The connection's socket_fd.
+ * @param file_path The file path of the binary file which prepared to be sent.
+ * @return EXIT_SUCCESS if send successfully, otherwise nothing.
+ */
 extern int send_bin_file(int connect_fd, const char *file_path) {
     char buffer[BUFFER_SIZE];
     FILE *fp = fopen(file_path, "rb");
-    printf("Run at here.\n");
     if (fp == NULL)
         perror("ERROR : File : Not found!\n");
     else {
-        printf("Enter send_bin\n");
         bzero(buffer, BUFFER_SIZE);
         int length = 0;
         while ((length = fread(buffer, sizeof(char), BUFFER_SIZE, fp)) > 0) {
-            printf("Enter send_bin loop.\n");
             if (send(connect_fd, buffer, length, 0) < 0) {
                 perror("ERROR : File : Send failed.\n");
                 break;
@@ -99,6 +121,13 @@ extern int send_bin_file(int connect_fd, const char *file_path) {
     return EXIT_SUCCESS;
 }
 
+/**
+ * Receive a binary file from server (or client).
+ *
+ * @param cli_socket_fd The connection's socket_fd.
+ * @param file_path The file path of local binary file which prepared to receive.
+ * @return EXIT_SUCCESS if recevie successfully, otherwise nothing.
+ */
 extern int recv_bin_file(int cli_socket_fd, const char *file_path) {
     char buffer[BUFFER_SIZE];
     FILE *fp = fopen(file_path, "wb");
@@ -106,11 +135,9 @@ extern int recv_bin_file(int cli_socket_fd, const char *file_path) {
         perror("ERROR : File : Not found.\n");
         return EXIT_FAILURE;
     } else {
-        printf("Run in the recv_bin.\n");
         bzero(buffer, BUFFER_SIZE);
         int length = 0;
         while ((length = recv(cli_socket_fd, buffer, BUFFER_SIZE, 0)) > 0) {
-            printf("Into the recv_bin loop.\n");
             if (fwrite(buffer, sizeof(char), length, fp) < length) {
                 perror("ERROR : File : Write failed.\n");
                 return EXIT_FAILURE;
@@ -123,4 +150,4 @@ extern int recv_bin_file(int cli_socket_fd, const char *file_path) {
     return EXIT_SUCCESS;
 }
 
-#endif
+#endif /* LOC_NET_H */
