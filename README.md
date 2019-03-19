@@ -6,7 +6,9 @@ The repository's content are mainly from HIT's Information Security subject's ex
 
 ## Experiment 1:
 
+<font size=10>
 - [x] Implement C/S Programs
+</font>
 
 > Details:
 >
@@ -19,7 +21,9 @@ The repository's content are mainly from HIT's Information Security subject's ex
 >
 > I used the program named NetShell to implement the C/S two sides file transmission.
 
-- [ ] Implement Scanner Programs with UI
+<font size=10>
+- [x] Implement Scanner Programs with UI
+</font>
 
 > Details:
 >
@@ -27,6 +31,14 @@ The repository's content are mainly from HIT's Information Security subject's ex
 > The scanner's interface is required to input the scanned IP range and Port range, 
 > and the number of threads to be used.
 > Display the result in the interface.
+>
+> Note:
+>
+> In order to improve the scanner's speed of scanning ports, I used multi-thread to
+> implement the work.
+> Besides, the program's widgets are from Python's tkinter module.
+> For the current version, I just make a simple check for the user's input, 
+> and the program's robustness is still need to be improved in the future.
 
 ### P.s:
 
