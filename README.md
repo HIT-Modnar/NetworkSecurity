@@ -38,6 +38,9 @@ The repository's content are mainly from HIT's Information Security subject's ex
 >
 > These are the screenshots of the Scanner:
 > 
+> ![Main Window](./file/show/pic1.png ''pic1.png'')
+> 
+> ![After Scanning](./file/show/pic2.png ''pic2.png'')
 
 ### P.s:
 
