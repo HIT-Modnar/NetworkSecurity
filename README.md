@@ -35,6 +35,9 @@ The repository's content are mainly from HIT's Information Security subject's ex
 > Besides, the program's widgets are from Python's tkinter module.
 > For the current version, I just make a simple check for the user's input, 
 > and the program's robustness is still need to be improved in the future.
+>
+> These are the screenshots of the Scanner:
+> 
 
 ### P.s:
 
