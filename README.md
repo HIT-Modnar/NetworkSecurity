@@ -6,9 +6,7 @@ The repository's content are mainly from HIT's Information Security subject's ex
 
 ## Experiment 1:
 
-<font size=10>
 - [x] Implement C/S Programs
-</font>
 
 > Details:
 >
@@ -21,9 +19,7 @@ The repository's content are mainly from HIT's Information Security subject's ex
 >
 > I used the program named NetShell to implement the C/S two sides file transmission.
 
-<font size=10>
 - [x] Implement Scanner Programs with UI
-</font>
 
 > Details:
 >
